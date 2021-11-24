@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "../store/appContext";
 import { useHistory } from "react-router";
+import Swal from "sweetalert2";
 
 export const SignupContent = () => {
 	const { store, actions } = useContext(AppContext);
@@ -24,10 +25,21 @@ export const SignupContent = () => {
 			body: JSON.stringify(data)
 		});
 		if (response.ok) {
-			alert("User created", response.statusText);
+			Swal.fire({
+				icon: "success",
+				title: "User created!",
+				showConfirmButton: false,
+				timer: 1500
+			});
 			history.push("/login");
+		} else {
+			Swal.fire({
+				icon: "error",
+				title: `Something went wrong! ${response.statusText}`,
+				showConfirmButton: false,
+				timer: 1500
+			});
 		}
-		alert("Something went wrong", response.statusText);
 	};
 
 	return (
