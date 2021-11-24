@@ -1,77 +1,107 @@
-import React, { useEffect, useState } from "react";
-import "../../styles/home.scss";
-import { PeopleCard } from "../component/cardComponent/PeopleCard";
-import { PlanetCard } from "../component/cardComponent/PlanetCard";
-import { VehicleCard } from "../component/cardComponent/VehicleCard";
-
-const url = "https://www.swapi.tech/api";
+import React, { useContext, useEffect, useState } from "react";
+import { ItemCard } from "../component/ItemCard";
+import { AppContext } from "../store/appContext";
+const apiUrl = "https://www.swapi.tech/api/";
 
 export const Home = () => {
-	const [characters, setCharacters] = useState([]);
+	const [peoples, setPeoples] = useState([]);
 	const [planets, setPlanets] = useState([]);
-	const [vehicles, setVehicles] = useState([]);
+	const [vechicles, setVehicles] = useState([]);
+	const { store, actions } = useContext(AppContext);
+	let dbLocalPeople = localStorage.getItem("people");
+	let dbLocalVehicles = localStorage.getItem("vehicles");
+	let dbLocalPlanets = localStorage.getItem("planets");
 
-	const adquireCharacters = async () => {
-		try {
-			const response = await fetch(`${url}/people`);
-			const body = await response.json();
-			setCharacters(body.results);
-		} catch (error) {
-			alert(`Something happened! 666${error}`);
-		}
-	};
-
-	const adquirePlanets = async () => {
-		try {
-			const response = await fetch(`${url}/planets`);
-			const body = await response.json();
-			setPlanets(body.results);
-		} catch (error) {
-			alert(`Something happened!432 ${error}`);
-		}
-	};
-
-	const adquireVehicles = async () => {
-		try {
-			const response = await fetch(`${url}/vehicles`);
-			const body = await response.json();
-			setVehicles(body.results);
-		} catch (error) {
-			alert(`Something happened!321 ${error}`);
+	const getData = () => {
+		if (dbLocalPlanets === null && dbLocalPeople === null && dbLocalVehicles === null) {
+			const fetchData = async () => {
+				try {
+					let [dataPeople, dataVehicles, dataPlanets] = await Promise.all([
+						fetch(`${apiUrl}/people`),
+						fetch(`${apiUrl}/vehicles`),
+						fetch(`${apiUrl}/planets`)
+					]);
+					if (dataPeople.ok) {
+						const bodyPeople = await dataPeople.json();
+						setPeoples(bodyPeople.results);
+						dbLocalPeople = localStorage.setItem("people", JSON.stringify(bodyPeople.results));
+					}
+					if (dataVehicles.ok) {
+						const bodyVehicles = await dataVehicles.json();
+						setVehicles(bodyVehicles.results);
+						dbLocalVehicles = localStorage.setItem("vehicles", JSON.stringify(bodyVehicles.results));
+					}
+					if (dataPlanets.ok) {
+						const bodyPlanets = await dataPlanets.json();
+						setPlanets(bodyPlanets.results);
+						dbLocalPlanets = localStorage.setItem("planets", JSON.stringify(bodyPlanets.results));
+					}
+				} catch (err) {}
+			};
+			fetchData();
+		} else {
+			setPeoples(JSON.parse(localStorage.getItem("people")));
+			setPlanets(JSON.parse(localStorage.getItem("planets")));
+			setVehicles(JSON.parse(localStorage.getItem("vehicles")));
 		}
 	};
 
 	useEffect(() => {
-		adquireCharacters();
-		adquirePlanets();
-		adquireVehicles();
+		getData();
 	}, []);
 
+	useEffect(
+		() => {
+			if (store.token) {
+				actions.getFavorites(store.token);
+			}
+		},
+		[store.token]
+	);
 	return (
-		<div className="container-fluid">
-			<h1 className="text-start text-danger">Characters</h1>
-			<div className="overflow-auto">
-				<div className="d-flex" style={{ width: `calc(${characters.length} * 18rem)`, height: "21rem" }}>
-					{characters.map((character, index) => {
-						return <PeopleCard key={index} item={character} />;
-					})}
-				</div>
-			</div>
-			<h1 className="text-start text-danger">Planets</h1>
-			<div className="overflow-auto">
-				<div className="d-flex" style={{ width: `calc(${planets.length} * 18rem)`, height: "21rem" }}>
-					{planets.map((planet, index) => {
-						return <PlanetCard key={index} item={planet} />;
-					})}
-				</div>
-			</div>
-			<h1 className="text-start text-danger">Vehicles</h1>
-			<div className="overflow-auto">
-				<div className="d-flex" style={{ width: `calc(${vehicles.length} * 18rem)`, height: "21rem" }}>
-					{vehicles.map((vehicle, index) => {
-						return <VehicleCard key={index} item={vehicle} />;
-					})}
-				</div>
+		<div className="mt-5">
+			<div className="container">
+				{peoples.length === 0 ? (
+					<div className="d-flex justify-content-center">
+						<button className="btn btn-primary" type="button" disabled>
+							<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+							Loading...
+						</button>
+					</div>
+				) : (
+					<>
+						<h1 className="text-black">Characters</h1>
+						<div className="d-flex flex-row flex-nowrap overflow-auto">
+							{peoples.map((people, index) => {
+								return <ItemCard key={index} item={people} nature="people" />;
+							})}
+						</div>
+					</>
+				)}
+				{vechicles.length === 0 ? (
+					""
+				) : (
+					<>
+						<h1 className="text-black">Vehicles</h1>
+						<div className="d-flex flex-row flex-nowrap overflow-auto">
+							{vechicles.map((vechicle, index) => {
+								return <ItemCard key={index} item={vechicle} nature="vehicles" />;
+							})}
+						</div>
+					</>
+				)}
+				{planets.length === 0 ? (
+					""
+				) : (
+					<>
+						<h1 className="text-black">Planets</h1>
+						<div className="d-flex flex-row flex-nowrap overflow-auto">
+							{planets.map((planet, index) => {
+								return <ItemCard key={index} item={planet} nature="planets" />;
+							})}
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);

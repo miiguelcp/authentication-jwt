@@ -1,91 +1,90 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { CharacterInfo } from "../component/infoComponent/CharacterInfo";
-import { PlanetInfo } from "../component/infoComponent/PlanetInfo";
-import { VehicleInfo } from "../component/infoComponent/VehicleInfo";
+import PropTypes from "prop-types";
+import { useParams } from "react-router-dom";
 
-const url = "https://www.swapi.tech/api";
+import { ItemDetails } from "../component/ItemDetails";
+import { Description } from "../component/Description";
 
-export const SinglePeople = () => {
+const apiUrl = "https://www.swapi.tech/api";
+
+export const Single = props => {
 	const params = useParams();
-	const [info, setInfo] = useState(undefined);
-	const getInfo = async uid => {
-		try {
-			const response = await fetch(`${url}/people/${uid}`);
+	const [item, setItem] = useState(undefined);
+
+	const getData = async (id, endpoint) => {
+		const response = await fetch(`${apiUrl}/${endpoint}/${id}`);
+		if (response.ok) {
 			const body = await response.json();
-			setInfo(body);
-		} catch (error) {
-			alert(`Something happened! 123 ${error}`);
+			let arrayItem = [];
+			if (endpoint === "people") {
+				arrayItem.push(
+					["Name", body.result.properties.name],
+					["Birth Day", body.result.properties.birth_year],
+					["Gender", body.result.properties.gender],
+					["Height", body.result.properties.height],
+					["Skin Color", body.result.properties.skin_color],
+					["Eye Color", body.result.properties.eye_color],
+					["Description", body.result.description]
+				);
+			} else if (endpoint === "vehicles") {
+				arrayItem.push(
+					["Name", body.result.properties.name],
+					["Crew", body.result.properties.crew],
+					["Passengers", body.result.properties.passengers],
+					["Vehicle Class", body.result.properties.vehicle_class],
+					["Model", body.result.properties.model],
+					["Manufacturer", body.result.properties.manufacturer],
+					["Description", body.result.description]
+				);
+			} else {
+				arrayItem.push(
+					["Name", body.result.properties.name],
+					["Climate", body.result.properties.climate],
+					["Terrain", body.result.properties.terrain],
+					["Gravity", body.result.properties.gravity],
+					["Diameter", body.result.properties.diameter],
+					["Population", body.result.properties.population],
+					["Description", body.result.description]
+				);
+			}
+
+			setItem(arrayItem);
 		}
 	};
+
 	useEffect(
 		() => {
-			if (params.id) {
-				getInfo(params.id);
+			if (params.id && params.endpoint) {
+				getData(params.id, params.endpoint);
 			}
 		},
-		[params.id]
+		[params.id, params.endpoint]
 	);
 
 	return (
-		<div className="jumbotron">
-			<h4 className="display-4">{<CharacterInfo info={info} />}</h4>
-		</div>
+		<>
+			<div className="container">
+				{item ? (
+					<ItemDetails item={item} />
+				) : (
+					<div className="d-flex py-3 justify-content-center">
+						<button className="btn btn-primary" type="button" disabled>
+							<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+							Loading...
+						</button>
+					</div>
+				)}
+			</div>
+			<div className="row py-5">
+				{item &&
+					item.map((prop, index) => {
+						return <Description key={index} value={prop} />;
+					})}
+			</div>
+		</>
 	);
 };
 
-export const SinglePlanet = () => {
-	const params = useParams();
-	const [info, setInfo] = useState(undefined);
-	const getInfo = async uid => {
-		try {
-			const response = await fetch(`${url}/planets/${uid}`);
-			const body = await response.json();
-			setInfo(body);
-		} catch (error) {
-			alert(`Something happened! 123 ${error}`);
-		}
-	};
-	useEffect(
-		() => {
-			if (params.id) {
-				getInfo(params.id);
-			}
-		},
-		[params.id]
-	);
-
-	return (
-		<div className="jumbotron">
-			<h4 className="display-4">{<PlanetInfo info={info} />}</h4>
-		</div>
-	);
-};
-
-export const SingleVehicle = () => {
-	const params = useParams();
-	const [info, setInfo] = useState(undefined);
-	const getInfo = async uid => {
-		try {
-			const response = await fetch(`${url}/vehicles/${uid}`);
-			const body = await response.json();
-			setInfo(body);
-		} catch (error) {
-			alert(`Something happened! 123 ${error}`);
-		}
-	};
-	useEffect(
-		() => {
-			if (params.id) {
-				getInfo(params.id);
-			}
-		},
-		[params.id]
-	);
-
-	return (
-		<div className="jumbotron">
-			<h4 className="display-4">{<VehicleInfo info={info} />}</h4>
-		</div>
-	);
+Single.propTypes = {
+	item: PropTypes.object
 };

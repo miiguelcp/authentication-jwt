@@ -3,13 +3,13 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 
 import { Home } from "./views/home";
+import { Single } from "./views/single";
 
-import { SinglePeople, SinglePlanet, SingleVehicle } from "./views/single";
-
-import { Navbar } from "./component/navbar";
-import { Footer } from "./component/footer";
-
+import { Navbar } from "./component/Navbar";
+import { Footer } from "./component/Footer";
 import AppContextProvider from "./store/appContext";
+import { Signup } from "./views/Signup";
+import { Login } from "./views/Login";
 
 //create your first component
 const Layout = () => {
@@ -22,24 +22,25 @@ const Layout = () => {
 			<AppContextProvider>
 				<BrowserRouter basename={basename}>
 					<ScrollToTop>
-						<div className="container-fluid">
-							<Navbar />
-							<Switch>
-								<Route exact path="/">
-									<Home />
-								</Route>
-								<Route exact path="/character-info/:id">
-									<SinglePeople />
-								</Route>
-								<Route exact path="/planet-info/:id">
-									<SinglePlanet />
-								</Route>
-								<Route exac path="/vehicle-info/:id">
-									<SingleVehicle />
-								</Route>
-							</Switch>
-							<Footer />
-						</div>
+						<Navbar />
+						<Switch>
+							<Route exact path="/">
+								<Home />
+							</Route>
+							<Route exact path="/detail/:endpoint/:id">
+								<Single />
+							</Route>
+							<Route exact path="/signup">
+								<Signup />
+							</Route>
+							<Route exact path="/login">
+								<Login />
+							</Route>
+							<Route>
+								<h1>Not found!</h1>
+							</Route>
+						</Switch>
+						<Footer />
 					</ScrollToTop>
 				</BrowserRouter>
 			</AppContextProvider>
